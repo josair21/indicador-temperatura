@@ -248,9 +248,9 @@ void time_date(){
 void actual_temp(){
   if(millis()-timemillis>4000){
     bool lasttwodigits;
-    float a = 0.0255, b = 0.6306, c = 1.8808;
+    float a = 0.0008, b = 0.9656, c = 3.0243;
     temp=thermo.temperature(RNOMINAL,RREF);
-    //temp = a * temp * temp + b * temp + c;
+    temp = a * temp * temp + b * temp + c;
     Serial.print("temp: ");
     Serial.println(temp);
     myGLCD.setFont(SixteenSegment40x60);
