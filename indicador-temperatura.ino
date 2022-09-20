@@ -214,7 +214,7 @@ void background(int z){
 void calendar_icon(){
   myGLCD.setColor(VGA_WHITE);
   myGLCD.fillRoundRect (550-260, 30, 770-260, 94);
-  myGLCD.drawBitmap(702-260,30,64,64,calendar);
+  myGLCD.drawBitmap(702-260,30,64,64,calendar, 4);
 }
 void time_date(){
   myGLCD.setFont(BigFont);
