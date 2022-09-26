@@ -12,6 +12,7 @@
 #define XMAX 799
 #define YMAX 479
 #define myRound(R) round(R * 20.0) / 20.0
+#define roundInt(X) floor(X * 100);
 #define C2F(c) ((9 * c / 5) + 32)
 extern uint8_t BigFont[];
 //extern uint8_t SmallFont[];
@@ -27,7 +28,7 @@ extern unsigned short buzzer_on[];
 extern unsigned short buzzer_off[];
 unsigned int xTouch, yTouch, k = 0;
 unsigned int lastDay, lastMonth, lastYear, lastHour, lastMinute;
-unsigned long j = 0, lastMillis = -5000, soundMillis = millis();
+unsigned long j = 0, lastMillis = -5000, soundMillis = millis(), millisOffset = 0;
 float Tmin, Tmax, lastTmin, lastTmax, temperature, Offset, lastOffset;
 unsigned int value_edit = 0;
 int a, b, c, d, intTemperature, decTemperature, buzz;
@@ -65,13 +66,30 @@ void loop(){
   //print_buttons(); //Dosent make sense for me, estara adentro de start screen
   upper_value();
   lower_value();
-  print_offset();
+  if(millis() - millisOffset < 10000){
+    print_offset();
+  }
+  else{
+    no_print_offset();
+  }
   //print_buzzer();
   sound_buzzer();
   if(millis() - lastMillis > 5000){
     print_temperature();
     lastMillis = millis();
   }
+}
+void no_print_offset(){
+  int x = 20;
+  int y = 375;
+  char buff[5] = "";
+  char offset_array[15] = "     ";
+  myGLCD.setFont(Grotesk24x48);
+  myGLCD.setBackColor(255, 255, 255);
+  myGLCD.setColor(0, 0, 0);
+  //dtostrf(Offset, 5, 2, buff);
+  //sprintf(offset_array, "%s", buff);
+  myGLCD.print(offset_array, x+18, y+12, 0);
 }
 void print_offset(){
   int x = 20;
@@ -162,12 +180,14 @@ void print_temperature(){
   Tpoly = PT100.celsius_polynomial(ohms) ;        // 5th order polynomial
   Trpoly  = PT100.celsius_rationalpolynomial(ohms) ;  // ugly rational polynomial quotient
   */
-  Serial.println(temperature);
+  //Serial.println(temperature);
   temperature = myRound(temperature);
+  Serial.println(temperature);
+  //Serial.println(Offset);
   a = temperature / 10;
   b = (temperature - a * 10);
-  c = temperature * 10 - a * 100 - b *10;
-  d = temperature * 100 - a * 1000 - b * 100 - c * 10;
+  c = floor(temperature * 10) - a * 100 - b *10;
+  d = floor(temperature * 100.0 + 0.01) - a * 1000 - b * 100 - c * 10;
   intTemperature = a*10 + b;
   decTemperature = c*10 + d;
   myGLCD.setColor(0, 255, 0);
@@ -445,6 +465,7 @@ void read_touch(){
   if(20 < xTouch && xTouch < 20 + 150){
     if(375 < yTouch && yTouch < 375+70){
       if(value_edit == 0) value_edit = 4;
+      millisOffset = millis();
     }
   }
   //Boton de 
@@ -511,6 +532,7 @@ void read_touch(){
       }
       else if(value_edit == 4){
         Offset = lastOffset;
+        millisOffset = millis();
       }
       value_edit = 0;
       print_rectangles();
@@ -538,6 +560,7 @@ void read_touch(){
         EEPROM.put(8, Offset);
         value_edit = 0;
         lastMillis = 0;
+        millisOffset = millis();
       }
     }
     if(220 < yTouch && yTouch < 280){//Down
@@ -567,6 +590,7 @@ void read_touch(){
       }
       else if(value_edit == 4){
         Offset -= 0.05;
+        millisOffset = millis();
       }
     }
     if(120 < yTouch && yTouch < 180){//Uppppp
@@ -596,6 +620,7 @@ void read_touch(){
       }
       else if(value_edit == 4){
         Offset += 0.05;
+        millisOffset = millis();
       }
     }
   }
